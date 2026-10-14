@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pricelist Jasa Cetak Foto</title>
+  <style>
+    /* Reset dasar agar tampilan rapi di semua ukuran HP */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Mencegah scroll atas-bawah pada body utama */
+      background-color: #121212;
+    }
+
+    /* Container utama untuk Horizontal Scrolling */
+    .slider-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh; /* Fallback untuk browser lama */
+      height: 100dvh; /* Menyesuaikan tinggi layar HP secara dinamis */
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory; /* Efek mengunci halaman saat digeser */
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch; /* Smooth scroll di iOS */
+    }
+
+    /* Menyembunyikan scrollbar agar terlihat seperti aplikasi */
+    .slider-container::-webkit-scrollbar {
+      display: none;
+    }
+    .slider-container {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Pengaturan setiap halaman (1 Produk = 1 Page penuh) */
+    .page {
+      flex: 0 0 100vw;
+      width: 100vw;
+      height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 18px;
+      background: linear-gradient(160deg, #ffffff 0%, #f1f5f9 100%);
+      position: relative;
+    }
+
+    /* Bagian Header / Judul Pricelist */
+    .header {
+      text-align: center;
+      width: 100%;
+    }
+
+    .badge-page {
+      display: inline-block;
+      background-color: #e2e8f0;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Kartu Produk */
+    .product-card {
+      width: 100%;
+      max-width: 380px; /* Batas lebar agar tetap proporsional di HP layar lebar */
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin: auto 0;
+    }
+
+    /* Bingkai Gambar Contoh Produk */
+    .image-wrapper {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      max-height: 48vh; /* Menjaga agar tidak kepanjangan di HP layar pendek */
+      border-radius: 16px;
+      overflow: hidden;
+      background-color: #f8fafc;
+      margin-bottom: 16px;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Teks Nama Produk & Deskripsi */
+    .product-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .product-desc {
+      font-size: 0.88rem;
+      color: #64748b;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    /* Kotak Harga Standar */
+    .price-box {
+      width: 100%;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 20px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    .price-amount {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .price-unit {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    /* Kotak Harga Bundel (Khusus Page 5 - Gantungan Kunci) */
+    .price-bundle-container {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .price-bundle-item {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 12px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .price-bundle-item.promo {
+      background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
+      border: 1.5px solid #38bdf8;
+    }
+
+    .promo-tag {
+      font-size: 0.65rem;
+      background-color: #f59e0b;
+      color: #ffffff;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .bundle-qty {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .bundle-amount {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    .price-bundle-item.promo .bundle-amount {
+      color: #fde047;
+    }
+
+    /* Petunjuk Geser (Swipe Hint) di bagian bawah */
+    .swipe-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 600;
+      animation: geser 1.8s infinite ease-in-out;
+    }
+
+    @keyframes geser {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(5px); }
+    }
+
+    /* Penyesuaian otomatis untuk HP dengan layar kecil/pendek */
+    @media (max-height: 680px) {
+      .page {
+        padding: 12px 14px;
+      }
+      .image-wrapper {
+        max-height: 42vh;
+        margin-bottom: 10px;
+      }
+      .product-title {
+        font-size: 1.15rem;
+      }
+      .product-desc {
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+      }
+      .price-box {
+        padding: 10px 16px;
+      }
+      .price-amount {
+        font-size: 1.25rem;
+      }
+      .bundle-amount {
+        font-size: 1.05rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slider-container">
+    
+    <!-- ================= PAGE 1 ================= -->
+    <section class="page">
+      <div class="header">
+        <span class="badge-page">Pricelist • 1 / 5</span>
+      </div>
+
+      <div class="product-card">
+        <div class="image-wrapper">
+          <img src="foto-page1.png" alt="Cetak Foto Per Lembar">
+        </div>
+        <h1 class="product-title">Cetak Foto Per Lembar</h1>
+        <p class="product-desc">Tersedia pilihan cetak dengan bingkai putih (polos) maupun full foto tanpa tepi.</p>
+        <div class="price-box">
+          <span class="price-amount">Rp 20.000</span>
+          <span class="price-unit">/ lembar</span>
+        </div>
+      </div>
+
+      <div class="swipe-indicator">
+        <span>Geser ke kanan untuk produk lainnya</span>
+        <span>&rarr;</span>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 2 ================= -->
+    <section class="page">
+      <div class="header">
+        <span class="badge-page">Pricelist • 2 / 5</span>
+      </div>
+
+      <div class="product-card">
+        <div class="image-wrapper">
+          <img src="foto-page2.png" alt="Frame Foto 4R dengan Akrilik">
+        </div>
+        <h2 class="product-title">Frame Foto 4R Akrilik</h2>
+        <p class="product-desc">Bahan akrilik premium, jernih & tahan lama. Desain minimalis modern untuk meja Anda.</p>
+        <div class="price-box">
+          <span class="price-amount">Rp 40.000</span>
+          <span class="price-unit">/ pcs</span>
+        </div>
+      </div>
+
+      <div class="swipe-indicator">
+        <span>&larr;</span>
+        <span>Geser kiri / kanan</span>
+        <span>&rarr;</span>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 3 ================= -->
+    <section class="page">
+      <div class="header">
+        <span class="badge-page">Pricelist • 3 / 5</span>
+      </div>
+
+      <div class="product-card">
+        <div class="image-wrapper">
+          <img src="foto-page3.png" alt="Print Photo Strip / Photo Box">
+        </div>
+        <h2 class="product-title">Print Photo Strip / Box</h2>
+        <p class="product-desc">Cetak foto bergaya photobox kekinian dengan kualitas warna tajam dan kertas foto tebal.</p>
+        <div class="price-box">
+          <span class="price-amount">Rp 25.000</span>
+          <span class="price-unit">/ Sepasang Strip</span>
+        </div>
+      </div>
+
+      <div class="swipe-indicator">
+        <span>&larr;</span>
+        <span>Geser kiri / kanan</span>
+        <span>&rarr;</span>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 4 ================= -->
+    <section class="page">
+      <div class="header">
+        <span class="badge-page">Pricelist • 4 / 5</span>
+      </div>
+
+      <div class="product-card">
+        <div class="image-wrapper">
+          <img src="foto-page4.png" alt="Frame Akrilik Photo Strip">
+        </div>
+        <h2 class="product-title">Frame Akrilik Photo Strip</h2>
+        <p class="product-desc">Pajang koleksi photo strip favoritmu dengan bingkai akrilik transparan yang elegan dan awet.</p>
+        <div class="price-box">
+          <span class="price-amount">Rp 40.000</span>
+          <span class="price-unit">/ pcs</span>
+        </div>
+      </div>
+
+      <div class="swipe-indicator">
+        <span>&larr;</span>
+        <span>Geser kiri / kanan</span>
+        <span>&rarr;</span>
+      </div>
+    </section>
+
+    <!-- ================= PAGE 5 ================= -->
+    <section class="page">
+      <div class="header">
+        <span class="badge-page">Pricelist • 5 / 5</span>
+      </div>
+
+      <div class="product-card">
+        <div class="image-wrapper">
+          <img src="foto-page5.png" alt="Gantungan Kunci Custom Photo">
+        </div>
+        <h2 class="product-title">Gantungan Kunci Custom</h2>
+        <p class="product-desc">Gantungan kunci akrilik custom menggunakan foto bebas pilihanmu. Cocok untuk hadiah & koleksi!</p>
+        
+        <!-- Tampilan Khusus Harga Satuan vs Bundel 2 Pcs -->
+        <div class="price-bundle-container">
+          <div class="price-bundle-item">
+            <span class="bundle-qty">Beli 1 Pcs</span>
+            <span class="bundle-amount">Rp 25.000</span>
+          </div>
+          <div class="price-bundle-item promo">
+            <span class="promo-tag">Lebih Hemat!</span>
+            <span class="bundle-qty">Beli 2 Pcs</span>
+            <span class="bundle-amount">Rp 30.000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swipe-indicator">
+        <span>&larr;</span>
+        <span>Geser ke kiri untuk kembali</span>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
